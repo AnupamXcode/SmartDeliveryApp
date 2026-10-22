@@ -1,113 +1,143 @@
 # Food Delivery Order Trends and Delivery Time Analysis
-### Big Data Analytics Project | Apache Hadoop, HDFS, PySpark, and Streamlit
+### Big Data Analytics Platform | Apache Hadoop, HDFS, PySpark, React & Streamlit
+
+An enterprise-grade Big Data Analytics web platform analyzing **45,593 delivery transactions**. The system uncovers delivery duration benchmarks, logistical bottlenecks, weather sensitivity, urban density disparities, courier rating correlations, and multi-order batching penalties.
 
 ---
 
-## 1. Project Overview
-This project implements an end-to-end Big Data Analytics workflow analyzing **45,593 delivery transactions**. The system evaluates delivery duration patterns, logistical bottlenecks, weather sensitivity, urban zone variations, courier rating correlations, and multi-order batching penalties.
-
-The application uses an enterprise-grade analytical interface built on Streamlit and Plotly, designed for clarity, high information density, and statistical rigor without decorative gimmicks.
-
-### Big Data Architecture
+## 🏗️ 1. Big Data Architecture
 ```mermaid
 flowchart LR
-    A[Raw Delivery Logs\n45,593 Records] -->|HDFS Distributed Storage| B[(Apache Hadoop HDFS\nResilient Storage)]
+    A[Raw Delivery Logs\n45,593 Transactions] -->|Distributed Ingestion| B[(Apache Hadoop HDFS\nScalable Data Lake)]
     B -->|Partitioned Ingestion| C[PySpark Distributed Engine\nDataFrames & Spark SQL]
     C -->|Distributed GroupBy & Aggregations| D[Analytical CSV Data Marts\nSummary Products]
-    D -->|Cached In-Memory Readers| E[Streamlit Analytics UI\nInteractive Plotly Dashboard]
+    D -->|Static & API Consumers| E[React + Vite Frontend\nTailwind • Recharts • Framer Motion]
+    D -->|Cached Readers| F[Streamlit Dashboard\nAlternative Local Explorer]
 ```
 
 ---
 
-## 2. Technical Stack
-- **Distributed Storage:** Apache Hadoop HDFS (Hadoop Distributed File System)
-- **Distributed Computation:** Apache Spark (PySpark SQL & DataFrames)
-- **Web Analytics UI:** Streamlit (v1.30+)
-- **Data Visualization:** Plotly (v5.18+)
-- **Data Manipulation:** Pandas (v2.0+)
-- **Runtime:** Python 3.10+ (Tested on Python 3.13 / 3.14)
+## 🎨 2. Frontend Tech Stack (React + Vite)
+- **Framework:** React 18 + Vite 6
+- **Styling:** Tailwind CSS with custom midnight navy & cyan design system
+- **Data Visualization:** Recharts (responsive bar, pie, line charts with custom dark tooltips)
+- **Icons:** Lucide React
+- **Animations:** Framer Motion (subtle entrance and interaction transitions)
+- **CSV Parsing:** Papa Parse (static asset loading from `/data/*.csv`)
+- **Theme Palette:**
+  - Background: `#0B1020`
+  - Sidebar: `#0E1528`
+  - Surface Cards: `#141D32`
+  - Primary Accent: Electric Cyan `#38D9F8`
+  - Secondary Accent: Violet `#8B7CFF`
+  - Success Indicator: Emerald `#34D399`
+  - Warning/Danger: Amber `#FBBF24` / Rose `#FB7185`
 
 ---
 
-## 3. Repository Structure
+## 📂 3. Repository Structure
 ```
 BDA/
-├── app.py                         # Complete Streamlit analytics application
-├── requirements.txt               # Application dependencies
-├── README.md                      # Technical documentation & setup guide
-├── food_delivery_results/         # PySpark aggregated data products (CSV)
-│   ├── overall_summary.csv
-│   ├── vehicle_analysis.csv
-│   ├── traffic_analysis.csv
-│   ├── weather_analysis.csv
-│   ├── rating_analysis.csv
-│   ├── order_analysis.csv
-│   ├── city_analysis.csv
-│   ├── festival_analysis.csv
-│   └── multiple_delivery_analysis.csv
-└── Food-Delivery-Analysis/        # Original CSV result directory (preserved)
+├── public/
+│   └── data/                      # Web-accessible CSV data marts (9 files)
+├── src/
+│   ├── components/                # Reusable UI components
+│   │   ├── ChartCard.jsx          # Standardized Recharts wrapper
+│   │   ├── CustomTooltip.jsx      # High-contrast dark tooltip
+│   │   ├── KpiCard.jsx            # Animated metric indicator
+│   │   ├── Sidebar.jsx            # Collapsible navigation drawer
+│   │   └── Topbar.jsx             # Breadcrumbs, status & global filters
+│   ├── context/
+│   │   └── AnalyticsContext.jsx   # Global filter state and CSV data loader
+│   ├── pages/                     # Dedicated analytical views
+│   │   ├── Overview.jsx           # Executive summary & macro benchmarks
+│   │   ├── DeliveryPerformance.jsx # Driver ratings vs transit latency
+│   │   ├── TrafficWeather.jsx     # Congestion & meteorological penalties
+│   │   ├── CityAnalysis.jsx       # Urban density zone latency comparison
+│   │   ├── VehicleAnalysis.jsx    # Transportation modality velocity
+│   │   ├── FestivalBatching.jsx   # Surge analysis & heuristic simulator
+│   │   └── DataExplorer.jsx       # Tabular inspector & CSV export
+│   ├── utils/
+│   │   └── dataLoader.js          # Dynamic CSV fetcher & fallback loader
+│   ├── App.jsx                    # Root application structure
+│   ├── index.css                  # Tailwind styles and custom scrollbars
+│   └── main.jsx                   # React mounting entrypoint
+├── food_delivery_results/         # Original PySpark aggregated CSV results
+├── Food-Delivery-Analysis/        # Original CSV result directory (preserved)
+├── app.py                         # Streamlit dashboard implementation
+├── requirements.txt               # Python dependencies for Streamlit
+├── package.json                   # Node.js project manifest & dependencies
+├── tailwind.config.js             # Tailwind configuration
+├── vite.config.js                 # Vite build configuration
+└── README.md                      # Platform documentation & setup guide
 ```
 
 ---
 
-## 4. Local Setup & Execution Instructions
+## 🚀 4. How to Run Locally
 
-### Prerequisites
-- Python 3.10 or newer (Python 3.13 / 3.14 recommended)
-- `pip` package manager
-
-### Steps
-1. **Open PowerShell in the project directory:**
-   ```powershell
-   cd "d:\Projects\College Project\BDA"
+### Option A: React + Vite Dashboard (Recommended)
+1. **Ensure Node.js (v18+) is installed.**
+2. **Install dependencies:**
+   ```bash
+   npm install
    ```
+3. **Start the local Vite development server:**
+   ```bash
+   npm run dev
+   ```
+4. **Access the application:**
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-2. **Install the required packages:**
+### Option B: Streamlit Dashboard (Alternative)
+1. **Ensure Python 3 is installed.**
+2. **Install Python requirements:**
    ```powershell
    py -3 -m pip install -r requirements.txt
    ```
-
-3. **Run the Streamlit application:**
+3. **Launch Streamlit:**
    ```powershell
    py -3 -m streamlit run app.py
    ```
-
-4. **Access the application:**
-   - **Local URL:** `http://localhost:8501`
-   - **Network URL:** `http://192.168.29.152:8501`
+4. **Access Streamlit:**
+   Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## 5. Analytical Views & Capabilities
+## 🌐 5. Deployment Guide: Vercel
 
-1. **Executive Summary:** Core KPI metrics ($N=45,593$, mean latency $26.29\text{ min}$, range $10.0–54.0\text{ min}$), traffic and vehicle latency distributions, and architectural overview.
-2. **Vehicle & Fleet Dynamics:** Comparative delivery times across transport modalities, capacity allocation shares, and summary data tables.
-3. **Traffic & Weather Conditions:** Quantitative assessment of traffic jam delays ($+46.6\%$ over low traffic) and meteorological impacts (fog/cloudy conditions vs clear weather).
-4. **Urban Density & Batching:** Urban zone latency disparities (semi-urban taking $>2\times$ longer than urban centers), festival surge factors ($+75.2\%$), and multi-order stacking curves.
-5. **Driver Performance & Orders:** Courier rating distributions, honest discussion of correlation vs causation, and food classification comparisons.
-6. **Latency Simulation Model:** Interactive multi-variable scenario estimator based on PySpark empirical regression weights with factor delay breakdowns.
-7. **Data Explorer & Schema:** Tabular schema inspector, memory footprints, and one-click CSV downloads for all 9 analytical data marts.
+The React application is pre-configured for zero-configuration Vercel deployment:
+
+### Method 1: Deploy via Vercel Dashboard
+1. Push your repository to GitHub:
+   ```bash
+   git add .
+   git commit -m "feat: complete React analytics dashboard"
+   git push origin main
+   ```
+2. Log into [vercel.com](https://vercel.com).
+3. Click **Add New...** ➔ **Project**.
+4. Import your GitHub repository (`SmartDeliveryApp`).
+5. Select **Vite** as the Framework Preset (defaults are automatically detected):
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+   - **Install Command:** `npm install`
+6. Click **Deploy!**
+
+### Method 2: Deploy via Vercel CLI
+```bash
+npm install -g vercel
+vercel
+```
 
 ---
 
-## 6. GitHub & Streamlit Community Cloud Deployment
+## 📊 6. Key Empirical Findings (From 45,593 Orders)
 
-### Step 1: Initialize Git
-```bash
-git init
-git add .
-git commit -m "feat: complete professional big data analytics dashboard"
-```
-
-### Step 2: Push to GitHub
-```bash
-git branch -M main
-git remote add origin https://github.com/<your-username>/food-delivery-big-data-analysis.git
-git push -u origin main
-```
-
-### Step 3: Deploy on Streamlit Cloud (Free)
-1. Navigate to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
-2. Click **Create app** and choose your repository.
-3. Set the Main file path to `app.py`.
-4. Click **Deploy!**
+- **Dataset Scale:** 45,593 delivery transactions with a fleet benchmark average of **26.29 minutes** (ranging from **10.0m** to a peak threshold of **54.0m**).
+- **Vehicle Modality:** Electric Scooters (**24.47 min**) and Scooters (**24.48 min**) deliver **3.14 minutes faster** than conventional motorcycles (**27.61 min**).
+- **Traffic Congestion:** Traffic jams extend delivery latency to **31.18 minutes** (**+46.6% delay** over low-traffic conditions at 21.27 min).
+- **Atmospheric Impact:** Cloudy and Foggy conditions introduce significant visual and road friction (**28.92 min**, a **+32.3% delay** over clear Sunny days at 21.86 min).
+- **Spatial Geometry:** Semi-urban deliveries average **49.73 minutes** due to extended transit radiuses, more than double urban centers (**22.98 min**).
+- **Festival Season:** Delays surge by **+75.2%** during festival events (**45.52 min** vs 25.98 min benchmark).
+- **Batching Delays:** Stacking multiple orders per courier sharply degrades transit times: 0 stacked = 22.88m, 1 stacked = 26.86m, 2 stacked = 40.45m, 3 stacked = 47.82m.
