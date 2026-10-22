@@ -7,38 +7,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: {
-          950: '#070B16',
-          900: '#0B1020',
-          850: '#0E1528',
-          800: '#141D32',
-          750: '#1A2540',
-          700: '#233152',
-          600: '#33446C',
-        },
-        cyan: {
-          400: '#38D9F8',
-          500: '#06B6D4',
-        },
-        violet: {
-          400: '#A78BFA',
-          500: '#8B7CFF',
-        },
-        emerald: {
-          400: '#34D399',
-          500: '#10B981',
-        },
-        amber: {
-          400: '#FBBF24',
-          500: '#F59E0B',
-        },
-        rose: {
-          400: '#FB7185',
-          500: '#F43F5E',
+        brand: {
+          bg: '#10101B',
+          surface: '#19192A',
+          elevated: '#23233A',
+          lime: '#D6FF3F',
+          coral: '#FF6B57',
+          violet: '#A78BFA',
+          cyan: '#48E5E0',
+          text: '#F8F7FF',
+          muted: '#B8B6CC',
+          border: '#34334B',
+          subtle: '#26253B'
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       }
     },

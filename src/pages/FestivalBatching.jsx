@@ -3,7 +3,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   Cell 
 } from 'recharts';
-import { Calendar, Layers, Sliders, AlertOctagon } from 'lucide-react';
+import { Calendar, Layers, Sliders, AlertOctagon, Sparkles, Clock, Calculator } from 'lucide-react';
 import ChartCard from '../components/ChartCard';
 import CustomTooltip from '../components/CustomTooltip';
 import { useAnalytics } from '../context/AnalyticsContext';
@@ -21,7 +21,7 @@ export default function FestivalBatching() {
   const [simMulti, setSimMulti] = useState('0');
   const [simFestival, setSimFestival] = useState('No');
 
-  // Empirical factor weights
+  // Empirical factor weights derived from PySpark analysis
   const cityDeltas = { Urban: 0.0, Metropolitian: 4.34, 'Semi-Urban': 26.75 };
   const vehDeltas = { 'Electric Scooter': 0.0, Scooter: 0.01, Bicycle: 1.96, Motorcycle: 3.14 };
   const trafficDeltas = { Low: 0.0, Medium: 5.43, High: 5.97, Jam: 9.91 };
@@ -51,22 +51,30 @@ export default function FestivalBatching() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Top Row: Festival and Multiple Delivery Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="Festival Season Delivery Latency Surge"
           subtitle="Festival events trigger an acute +75.2% expansion in fulfillment time"
+          interpretation={{
+            measuring: 'Average delivery time during standard operational days vs. major festival periods.',
+            shows: 'Non-festival days average 25.99 min, while festival events surge to 45.52 min (+19.54 min delay).',
+            whyMatters: 'Demonstrates the severe operational strain on restaurants and road networks during cultural events.'
+          }}
         >
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={festivalData} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
-                <XAxis dataKey="Festival" stroke="#64748B" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} unit="m" domain={[0, 55]} />
+                <XAxis dataKey="Festival" stroke="#8E8CA6" fontSize={11} tickLine={false} />
+                <YAxis stroke="#8E8CA6" fontSize={11} tickLine={false} unit="m" domain={[0, 52]} />
                 <Tooltip content={<CustomTooltip unit="min" />} />
-                <Bar dataKey="Avg_Delivery_Minutes" name="Avg Delivery" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="Avg_Delivery_Minutes" name="Avg Latency" radius={[4, 4, 0, 0]}>
                   {festivalData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.Festival === 'Yes' ? '#FB7185' : '#34D399'} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.Festival === 'Yes' ? '#FF6B57' : '#D6FF3F'} 
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -75,173 +83,168 @@ export default function FestivalBatching() {
         </ChartCard>
 
         <ChartCard
-          title="Multiple Deliveries Compounding Delay Curve"
-          subtitle="Stacking orders past 1 delivery produces steep exponential latency penalties"
+          title="Multiple Delivery Batching Delay Escalation"
+          subtitle="Compounding latency tax as couriers stack 0, 1, 2, or 3 simultaneous drop-offs"
+          interpretation={{
+            measuring: 'Average delivery minutes as a function of simultaneous multi-order batching.',
+            shows: '0 batches = 23.32 min; 1 batch = 27.30 min; 2 batches = 40.89 min; 3 batches = 48.26 min (+107% delay).',
+            whyMatters: 'Reveals that stacking more than 1 delivery per driver degrades customer experience exponentially.'
+          }}
         >
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={multipleData} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
-                <XAxis dataKey="Deliveries_Label" stroke="#64748B" fontSize={10} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} unit="m" domain={[15, 55]} />
-                <Tooltip content={<CustomTooltip unit="min" />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="Avg_Delivery_Minutes" 
-                  name="Avg Latency" 
-                  stroke="#FB7185" 
-                  strokeWidth={2.5}
-                  dot={{ fill: '#38D9F8', r: 4 }}
+              <BarChart data={multipleData} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                <XAxis 
+                  dataKey="multiple_deliveries" 
+                  stroke="#8E8CA6" 
+                  fontSize={11} 
+                  tickLine={false} 
                 />
-              </LineChart>
+                <YAxis stroke="#8E8CA6" fontSize={11} tickLine={false} unit="m" domain={[0, 55]} />
+                <Tooltip content={<CustomTooltip unit="min" />} />
+                <Bar dataKey="Avg_Delivery_Minutes" name="Avg Latency" fill="#48E5E0" radius={[4, 4, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </ChartCard>
       </div>
 
-      {/* Heuristic Scenario Latency Estimator */}
-      <div className="bg-[#141D32] border border-[#233152] rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
+      {/* Heuristic Latency Simulator */}
+      <div className="bg-[#19192A] border border-[#34334B] rounded-2xl p-6 lg:p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-[#34334B]">
           <div>
-            <h3 className="text-sm font-bold text-[#F1F5F9] flex items-center gap-2">
-              <Sliders size={16} className="text-[#38D9F8]" />
-              Heuristic Scenario Latency Estimator
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D6FF3F]/10 border border-[#D6FF3F]/30 text-[#D6FF3F] text-xs font-mono font-bold tracking-wider uppercase mb-2">
+              <Calculator size={14} /> Interactive PySpark Simulation Model
+            </div>
+            <h3 className="text-xl font-bold font-display text-[#F8F7FF] tracking-tight">
+              Dynamic Trip Latency Heuristic Calculator
             </h3>
-            <p className="text-xs text-[#A6B3C8] mt-0.5">
-              Empirical regression factor simulation based on PySpark analysis of 45,593 historical transactions.
+            <p className="text-xs text-[#B8B6CC] mt-1">
+              Select environmental and operational parameters to project expected fulfillment latency based on empirical Spark weights.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-[#A6B3C8] bg-[#0E1528] px-2.5 py-1 rounded border border-[#233152]">
-            Linear Heuristic Model
-          </span>
+
+          <div className="flex items-center gap-4 bg-[#10101B] border border-[#34334B] px-5 py-3 rounded-xl shrink-0">
+            <div>
+              <div className="text-[11px] font-mono text-[#8E8CA6] uppercase">Predicted SLA</div>
+              <div className="text-2xl font-bold font-display text-[#D6FF3F]">
+                {predictedLatency.toFixed(1)} <span className="text-xs font-sans text-[#B8B6CC]">minutes</span>
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#D6FF3F]/10 border border-[#D6FF3F]/30 flex items-center justify-center text-[#D6FF3F]">
+              <Clock size={20} />
+            </div>
+          </div>
         </div>
 
-        {/* Simulator Form Controls */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        {/* Controls Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          {/* City */}
           <div>
-            <label className="block text-[11px] font-medium text-[#A6B3C8] mb-1">Urban Zone</label>
+            <label className="block text-[11px] font-mono text-[#8E8CA6] mb-1.5 uppercase">Urban Zone</label>
             <select
               value={simCity}
               onChange={(e) => setSimCity(e.target.value)}
-              className="w-full bg-[#0E1528] border border-[#233152] rounded-lg px-2.5 py-1.5 text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38D9F8]"
+              className="w-full bg-[#10101B] border border-[#34334B] rounded-lg px-2.5 py-2 text-xs text-[#F8F7FF] focus:outline-none focus:border-[#D6FF3F]"
             >
               <option value="Urban">Urban</option>
-              <option value="Metropolitian">Metropolitian</option>
+              <option value="Metropolitian">Metropolitan</option>
               <option value="Semi-Urban">Semi-Urban</option>
             </select>
           </div>
 
+          {/* Vehicle */}
           <div>
-            <label className="block text-[11px] font-medium text-[#A6B3C8] mb-1">Vehicle Modality</label>
+            <label className="block text-[11px] font-mono text-[#8E8CA6] mb-1.5 uppercase">Vehicle Modality</label>
             <select
               value={simVehicle}
               onChange={(e) => setSimVehicle(e.target.value)}
-              className="w-full bg-[#0E1528] border border-[#233152] rounded-lg px-2.5 py-1.5 text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38D9F8]"
+              className="w-full bg-[#10101B] border border-[#34334B] rounded-lg px-2.5 py-2 text-xs text-[#F8F7FF] focus:outline-none focus:border-[#D6FF3F]"
             >
               <option value="Electric Scooter">Electric Scooter</option>
               <option value="Scooter">Scooter</option>
-              <option value="Bicycle">Bicycle</option>
               <option value="Motorcycle">Motorcycle</option>
+              <option value="Bicycle">Bicycle</option>
             </select>
           </div>
 
+          {/* Traffic */}
           <div>
-            <label className="block text-[11px] font-medium text-[#A6B3C8] mb-1">Traffic Congestion</label>
+            <label className="block text-[11px] font-mono text-[#8E8CA6] mb-1.5 uppercase">Traffic Density</label>
             <select
               value={simTraffic}
               onChange={(e) => setSimTraffic(e.target.value)}
-              className="w-full bg-[#0E1528] border border-[#233152] rounded-lg px-2.5 py-1.5 text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38D9F8]"
+              className="w-full bg-[#10101B] border border-[#34334B] rounded-lg px-2.5 py-2 text-xs text-[#F8F7FF] focus:outline-none focus:border-[#D6FF3F]"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
-              <option value="Jam">Jam</option>
+              <option value="Jam">Jam (Gridlock)</option>
             </select>
           </div>
 
+          {/* Weather */}
           <div>
-            <label className="block text-[11px] font-medium text-[#A6B3C8] mb-1">Weather State</label>
+            <label className="block text-[11px] font-mono text-[#8E8CA6] mb-1.5 uppercase">Weather</label>
             <select
               value={simWeather}
               onChange={(e) => setSimWeather(e.target.value)}
-              className="w-full bg-[#0E1528] border border-[#233152] rounded-lg px-2.5 py-1.5 text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38D9F8]"
+              className="w-full bg-[#10101B] border border-[#34334B] rounded-lg px-2.5 py-2 text-xs text-[#F8F7FF] focus:outline-none focus:border-[#D6FF3F]"
             >
               <option value="Sunny">Sunny</option>
-              <option value="Windy">Windy</option>
               <option value="Stormy">Stormy</option>
               <option value="Sandstorms">Sandstorms</option>
+              <option value="Windy">Windy</option>
               <option value="Cloudy">Cloudy</option>
               <option value="Fog">Fog</option>
             </select>
           </div>
 
+          {/* Multiple Deliveries */}
           <div>
-            <label className="block text-[11px] font-medium text-[#A6B3C8] mb-1">Stacked Orders</label>
+            <label className="block text-[11px] font-mono text-[#8E8CA6] mb-1.5 uppercase">Stacked Drops</label>
             <select
               value={simMulti}
               onChange={(e) => setSimMulti(e.target.value)}
-              className="w-full bg-[#0E1528] border border-[#233152] rounded-lg px-2.5 py-1.5 text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38D9F8]"
+              className="w-full bg-[#10101B] border border-[#34334B] rounded-lg px-2.5 py-2 text-xs text-[#F8F7FF] focus:outline-none focus:border-[#D6FF3F]"
             >
-              <option value="0">0 Direct</option>
-              <option value="1">1 Stacked</option>
-              <option value="2">2 Stacked</option>
-              <option value="3">3 Stacked</option>
+              <option value="0">0 Batched (Direct)</option>
+              <option value="1">1 Multi-Drop</option>
+              <option value="2">2 Multi-Drops</option>
+              <option value="3">3 Multi-Drops</option>
             </select>
           </div>
 
+          {/* Festival */}
           <div>
-            <label className="block text-[11px] font-medium text-[#A6B3C8] mb-1">Festival Active?</label>
+            <label className="block text-[11px] font-mono text-[#8E8CA6] mb-1.5 uppercase">Festival Surge</label>
             <select
               value={simFestival}
               onChange={(e) => setSimFestival(e.target.value)}
-              className="w-full bg-[#0E1528] border border-[#233152] rounded-lg px-2.5 py-1.5 text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38D9F8]"
+              className="w-full bg-[#10101B] border border-[#34334B] rounded-lg px-2.5 py-2 text-xs text-[#F8F7FF] focus:outline-none focus:border-[#D6FF3F]"
             >
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
+              <option value="No">No (Normal)</option>
+              <option value="Yes">Yes (Festival Event)</option>
             </select>
           </div>
         </div>
 
-        {/* Prediction Results & Factor Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-[#233152]">
-          <div className="flex flex-col justify-center items-center p-6 bg-[#0E1528] border border-[#233152] rounded-xl text-center">
-            <span className="text-xs uppercase tracking-wider text-[#A6B3C8] font-semibold mb-1">
-              Estimated Latency
-            </span>
-            <div className="text-5xl font-mono font-bold text-[#38D9F8] tracking-tight">
-              {predictedLatency.toFixed(1)}
-              <span className="text-lg text-[#F1F5F9] font-sans font-normal ml-1">min</span>
-            </div>
-            <div className="mt-2 text-[11px] text-[#64748B]">
-              Standard error: ±{(predictedLatency * 0.11).toFixed(1)}m from empirical distribution
-            </div>
+        {/* Contributing Factor Breakdown Chart */}
+        <div>
+          <div className="text-xs font-mono text-[#8E8CA6] uppercase mb-2">
+            Decomposed Factor Latency Contributions (Minutes)
           </div>
-
-          <div className="lg:col-span-2">
-            <div className="text-xs font-semibold text-[#F1F5F9] mb-2">Delay Factor Contribution Breakdown</div>
-            <div className="h-44 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={factorContributions} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                  <XAxis dataKey="factor" stroke="#64748B" fontSize={10} tickLine={false} />
-                  <YAxis stroke="#64748B" fontSize={10} tickLine={false} unit="m" />
-                  <Tooltip content={<CustomTooltip unit="min" />} />
-                  <Bar dataKey="delay" name="Delay" fill="#38D9F8" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="h-44 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={factorContributions} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                <XAxis dataKey="factor" stroke="#8E8CA6" fontSize={11} tickLine={false} />
+                <YAxis stroke="#8E8CA6" fontSize={11} tickLine={false} unit="m" />
+                <Tooltip content={<CustomTooltip unit="min" />} />
+                <Bar dataKey="delay" name="Delay Contribution" fill="#48E5E0" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
-      </div>
-
-      {/* Batching & Surge Operational Takeaways */}
-      <div className="bg-[#141D32] border-l-4 border-l-[#FB7185] border border-[#233152] rounded-lg p-5">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-[#FB7185] mb-2 flex items-center gap-1.5">
-          <AlertOctagon size={15} /> Dispatch Bottleneck Observations
-        </h4>
-        <ul className="text-xs text-[#CBD5E1] space-y-1.5 list-disc list-inside">
-          <li><strong>Festival Congestion Factor:</strong> Orders during festival seasons increase from 25.98 min to 45.52 min (+75.2%), caused by restaurant kitchen overcrowding and high street congestion.</li>
-          <li><strong>Batching Penalty Beyond 1 Order:</strong> Direct solo deliveries average 22.88 min. Adding 1 stacked order yields a modest 4-minute penalty (26.86 min), but stacking 2 orders leaps to 40.45 min (+17.6m), and 3 orders reaches 47.82 min (+24.9m).</li>
-          <li><strong>Algorithmic Recommendation:</strong> Dispatch intelligence engines should enforce a strict maximum threshold of 1 stacked order per courier during peak rush hours.</li>
-        </ul>
       </div>
     </div>
   );
