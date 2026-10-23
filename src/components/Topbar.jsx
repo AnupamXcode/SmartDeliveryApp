@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw, Filter, CheckCircle2 } from 'lucide-react';
+import { RotateCcw, Filter, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useAnalytics } from '../context/AnalyticsContext';
 
 const VIEW_TITLES = {
@@ -63,40 +63,72 @@ export default function Topbar() {
         {/* Global Controls & Status */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Quick Filters */}
-          <div className="flex items-center gap-2 bg-[#19192A] border border-[#34334B] rounded-xl px-3 py-1.5 text-xs">
-            <Filter size={13} className="text-[#D6FF3F]" />
-            <select
-              value={filters.traffic}
-              onChange={(e) => updateFilter('traffic', e.target.value)}
-              className="bg-transparent text-xs text-[#F8F7FF] focus:outline-none cursor-pointer"
-            >
-              <option value="All" className="bg-[#19192A]">Traffic: All</option>
-              <option value="Low" className="bg-[#19192A]">Traffic: Low</option>
-              <option value="Medium" className="bg-[#19192A]">Traffic: Medium</option>
-              <option value="High" className="bg-[#19192A]">Traffic: High</option>
-              <option value="Jam" className="bg-[#19192A]">Traffic: Jam</option>
-            </select>
+          <div className="flex items-center gap-2 bg-[#19192A] border border-[#34334B] rounded-xl px-3 py-1.5 text-xs shadow-sm">
+            <Filter size={13} className="text-[#D6FF3F] shrink-0" />
+            
+            {/* Vehicle Filter */}
+            <div className="relative">
+              <select
+                value={filters.vehicle}
+                onChange={(e) => updateFilter('vehicle', e.target.value)}
+                className={`bg-transparent text-xs font-mono font-medium focus:outline-none cursor-pointer pr-4 appearance-none ${
+                  filters.vehicle !== 'All' ? 'text-[#D6FF3F] font-bold' : 'text-[#F8F7FF]'
+                }`}
+              >
+                <option value="All" className="bg-[#19192A] text-[#F8F7FF]">Vehicle: All</option>
+                <option value="Electric Scooter" className="bg-[#19192A] text-[#F8F7FF]">Electric Scooter</option>
+                <option value="Scooter" className="bg-[#19192A] text-[#F8F7FF]">Scooter</option>
+                <option value="Motorcycle" className="bg-[#19192A] text-[#F8F7FF]">Motorcycle</option>
+                <option value="Bicycle" className="bg-[#19192A] text-[#F8F7FF]">Bicycle</option>
+              </select>
+              <ChevronDown size={11} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-[#8E8CA6]" />
+            </div>
 
             <span className="text-[#34334B]">|</span>
 
-            <select
-              value={filters.vehicle}
-              onChange={(e) => updateFilter('vehicle', e.target.value)}
-              className="bg-transparent text-xs text-[#F8F7FF] focus:outline-none cursor-pointer"
-            >
-              <option value="All" className="bg-[#19192A]">Vehicle: All</option>
-              <option value="Motorcycle" className="bg-[#19192A]">Motorcycle</option>
-              <option value="Scooter" className="bg-[#19192A]">Scooter</option>
-              <option value="Electric Scooter" className="bg-[#19192A]">Electric Scooter</option>
-              <option value="Bicycle" className="bg-[#19192A]">Bicycle</option>
-            </select>
+            {/* Traffic Filter */}
+            <div className="relative">
+              <select
+                value={filters.traffic}
+                onChange={(e) => updateFilter('traffic', e.target.value)}
+                className={`bg-transparent text-xs font-mono font-medium focus:outline-none cursor-pointer pr-4 appearance-none ${
+                  filters.traffic !== 'All' ? 'text-[#D6FF3F] font-bold' : 'text-[#F8F7FF]'
+                }`}
+              >
+                <option value="All" className="bg-[#19192A] text-[#F8F7FF]">Traffic: All</option>
+                <option value="Low" className="bg-[#19192A] text-[#F8F7FF]">Traffic: Low</option>
+                <option value="Medium" className="bg-[#19192A] text-[#F8F7FF]">Traffic: Medium</option>
+                <option value="High" className="bg-[#19192A] text-[#F8F7FF]">Traffic: High</option>
+                <option value="Jam" className="bg-[#19192A] text-[#F8F7FF]">Traffic: Jam</option>
+              </select>
+              <ChevronDown size={11} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-[#8E8CA6]" />
+            </div>
+
+            <span className="text-[#34334B] hidden sm:inline">|</span>
+
+            {/* City Filter */}
+            <div className="relative hidden sm:block">
+              <select
+                value={filters.city}
+                onChange={(e) => updateFilter('city', e.target.value)}
+                className={`bg-transparent text-xs font-mono font-medium focus:outline-none cursor-pointer pr-4 appearance-none ${
+                  filters.city !== 'All' ? 'text-[#D6FF3F] font-bold' : 'text-[#F8F7FF]'
+                }`}
+              >
+                <option value="All" className="bg-[#19192A] text-[#F8F7FF]">City: All</option>
+                <option value="Urban" className="bg-[#19192A] text-[#F8F7FF]">Urban</option>
+                <option value="Metropolitian" className="bg-[#19192A] text-[#F8F7FF]">Metropolitan</option>
+                <option value="Semi-Urban" className="bg-[#19192A] text-[#F8F7FF]">Semi-Urban</option>
+              </select>
+              <ChevronDown size={11} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-[#8E8CA6]" />
+            </div>
           </div>
 
           {/* Reset Filters Button */}
           {kpis.isFiltered && (
             <button
               onClick={resetFilters}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF6B57]/10 border border-[#FF6B57]/30 text-[#FF6B57] rounded-xl text-xs font-semibold hover:bg-[#FF6B57]/20 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF6B57]/10 border border-[#FF6B57]/30 text-[#FF6B57] rounded-xl text-xs font-mono font-semibold hover:bg-[#FF6B57]/20 transition-colors shadow-sm"
               title="Reset active filters"
             >
               <RotateCcw size={13} />
@@ -107,7 +139,7 @@ export default function Topbar() {
           {/* Dataset Status */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#19192A] border border-[#34334B] rounded-xl text-xs font-mono text-[#D6FF3F]">
             <CheckCircle2 size={13} />
-            <span>45,593 TRANSACTIONS</span>
+            <span>{kpis.isFiltered ? `${kpis.totalOrders.toLocaleString()} FILTERED ROWS` : '45,593 TRANSACTIONS'}</span>
           </div>
         </div>
       </div>

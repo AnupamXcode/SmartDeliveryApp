@@ -54,54 +54,165 @@ export function AnalyticsProvider({ children }) {
       Max_Delivery_Minutes: 54.0,
     };
 
+    const hasVehicle = filters.vehicle && filters.vehicle !== 'All';
+    const hasTraffic = filters.traffic && filters.traffic !== 'All';
+    const hasCity = filters.city && filters.city !== 'All';
+    const hasWeather = filters.weather && filters.weather !== 'All';
+    const hasFestival = filters.festival && filters.festival !== 'All';
+
+    const isFiltered = hasVehicle || hasTraffic || hasCity || hasWeather || hasFestival;
+
+    if (!isFiltered) {
+      return {
+        totalOrders: summary.Total_Orders,
+        avgDeliveryMinutes: summary.Avg_Delivery_Minutes,
+        minDeliveryMinutes: summary.Min_Delivery_Minutes,
+        maxDeliveryMinutes: summary.Max_Delivery_Minutes,
+        isFiltered: false,
+        filterDescription: 'All Fleet Orders',
+        activeFiltersList: [],
+        vehicleSharePercent: null,
+        trafficSharePercent: null,
+        deltaVsFleetSLA: 0,
+        selectedVehicle: null,
+        selectedTraffic: null,
+        operationalStatus: 'Baseline Fleet SLA'
+      };
+    }
+
+    const activeFiltersList = [];
     let total = summary.Total_Orders;
     let avg = summary.Avg_Delivery_Minutes;
-    let factorCount = 0;
-    let adjustedAvg = avg;
+    let vehicleSharePercent = null;
+    let trafficSharePercent = null;
+    let selectedVehicle = null;
+    let selectedTraffic = null;
+    let operationalStatus = 'Optimal';
 
-    if (filters.traffic !== 'All') {
-      const match = datasets.traffic?.find(t => t.Road_traffic_density === filters.traffic);
-      if (match) {
-        adjustedAvg += (match.Avg_Delivery_Minutes - avg) * 0.7;
-        total = Math.round(total * (match.Total_Orders / 45593));
-        factorCount++;
+    // 1. Single filter: ONLY Vehicle selected
+    if (hasVehicle && !hasTraffic && !hasCity && !hasWeather && !hasFestival) {
+      const vMatch = datasets.vehicle?.find(v => 
+        v.Type_of_vehicle?.trim().toLowerCase() === filters.vehicle.trim().toLowerCase()
+      );
+      if (vMatch) {
+        total = vMatch.Total_Orders;
+        avg = vMatch.Avg_Delivery_Minutes;
+        vehicleSharePercent = Number(((vMatch.Total_Orders / summary.Total_Orders) * 100).toFixed(1));
+        selectedVehicle = vMatch.Type_of_vehicle;
+        activeFiltersList.push(`Vehicle: ${vMatch.Type_of_vehicle}`);
+        
+        if (vMatch.Avg_Delivery_Minutes < 25.0) {
+          operationalStatus = 'Optimal';
+        } else if (vMatch.Avg_Delivery_Minutes > 27.0) {
+          operationalStatus = 'High Friction';
+        } else {
+          operationalStatus = 'Moderate';
+        }
+      }
+    } 
+    // 2. Single filter: ONLY Traffic selected
+    else if (hasTraffic && !hasVehicle && !hasCity && !hasWeather && !hasFestival) {
+      const tMatch = datasets.traffic?.find(t => 
+        t.Road_traffic_density?.trim().toLowerCase() === filters.traffic.trim().toLowerCase()
+      );
+      if (tMatch) {
+        total = tMatch.Total_Orders;
+        avg = tMatch.Avg_Delivery_Minutes;
+        trafficSharePercent = Number(((tMatch.Total_Orders / summary.Total_Orders) * 100).toFixed(1));
+        selectedTraffic = tMatch.Road_traffic_density;
+        activeFiltersList.push(`Traffic: ${tMatch.Road_traffic_density}`);
+
+        if (tMatch.Road_traffic_density === 'Jam') {
+          operationalStatus = 'Severe Gridlock';
+        } else if (tMatch.Road_traffic_density === 'Low') {
+          operationalStatus = 'Optimal Flow';
+        } else {
+          operationalStatus = 'Moderate Traffic';
+        }
       }
     }
-    if (filters.weather !== 'All') {
-      const match = datasets.weather?.find(w => w.Weatherconditions === filters.weather);
-      if (match) {
-        adjustedAvg += (match.Avg_Delivery_Minutes - avg) * 0.5;
-        factorCount++;
+    // 3. Single filter: ONLY City selected
+    else if (hasCity && !hasVehicle && !hasTraffic && !hasWeather && !hasFestival) {
+      const cMatch = datasets.city?.find(c => 
+        c.City?.trim().toLowerCase() === filters.city.trim().toLowerCase()
+      );
+      if (cMatch) {
+        total = cMatch.Total_Orders;
+        avg = cMatch.Avg_Delivery_Minutes;
+        activeFiltersList.push(`City: ${cMatch.City}`);
+
+        if (cMatch.City === 'Semi-Urban') {
+          operationalStatus = 'Critical Delay Corridor';
+        } else if (cMatch.City === 'Urban') {
+          operationalStatus = 'High Density Speed';
+        } else {
+          operationalStatus = 'Standard Metro';
+        }
       }
     }
-    if (filters.city !== 'All') {
-      const match = datasets.city?.find(c => c.City === filters.city);
-      if (match) {
-        adjustedAvg += (match.Avg_Delivery_Minutes - avg) * 0.5;
-        factorCount++;
+    // 4. Combined / Multi-dimensional filtering
+    else {
+      let combinedMultiplier = 1.0;
+      let latencyAdjustment = 0;
+
+      if (hasVehicle) {
+        const vMatch = datasets.vehicle?.find(v => 
+          v.Type_of_vehicle?.trim().toLowerCase() === filters.vehicle.trim().toLowerCase()
+        );
+        if (vMatch) {
+          combinedMultiplier *= (vMatch.Total_Orders / summary.Total_Orders);
+          latencyAdjustment += (vMatch.Avg_Delivery_Minutes - summary.Avg_Delivery_Minutes);
+          vehicleSharePercent = Number(((vMatch.Total_Orders / summary.Total_Orders) * 100).toFixed(1));
+          selectedVehicle = vMatch.Type_of_vehicle;
+          activeFiltersList.push(`Vehicle: ${vMatch.Type_of_vehicle}`);
+        }
       }
-    }
-    if (filters.vehicle !== 'All') {
-      const match = datasets.vehicle?.find(v => v.Type_of_vehicle === filters.vehicle);
-      if (match) {
-        adjustedAvg += (match.Avg_Delivery_Minutes - avg) * 0.4;
-        factorCount++;
+
+      if (hasTraffic) {
+        const tMatch = datasets.traffic?.find(t => 
+          t.Road_traffic_density?.trim().toLowerCase() === filters.traffic.trim().toLowerCase()
+        );
+        if (tMatch) {
+          combinedMultiplier *= (tMatch.Total_Orders / summary.Total_Orders);
+          latencyAdjustment += (tMatch.Avg_Delivery_Minutes - summary.Avg_Delivery_Minutes);
+          trafficSharePercent = Number(((tMatch.Total_Orders / summary.Total_Orders) * 100).toFixed(1));
+          selectedTraffic = tMatch.Road_traffic_density;
+          activeFiltersList.push(`Traffic: ${tMatch.Road_traffic_density}`);
+        }
       }
-    }
-    if (filters.festival !== 'All') {
-      const match = datasets.festival?.find(f => f.Festival === filters.festival);
-      if (match) {
-        adjustedAvg += (match.Avg_Delivery_Minutes - avg) * 0.6;
-        factorCount++;
+
+      if (hasCity) {
+        const cMatch = datasets.city?.find(c => 
+          c.City?.trim().toLowerCase() === filters.city.trim().toLowerCase()
+        );
+        if (cMatch) {
+          combinedMultiplier *= (cMatch.Total_Orders / summary.Total_Orders);
+          latencyAdjustment += (cMatch.Avg_Delivery_Minutes - summary.Avg_Delivery_Minutes);
+          activeFiltersList.push(`City: ${cMatch.City}`);
+        }
       }
+
+      total = Math.max(1, Math.round(summary.Total_Orders * combinedMultiplier));
+      avg = Math.max(10.0, Math.min(54.0, summary.Avg_Delivery_Minutes + latencyAdjustment));
+      operationalStatus = avg > 27.5 ? 'High Friction' : 'Optimal Cohort';
     }
+
+    const deltaVsFleetSLA = Number((avg - summary.Avg_Delivery_Minutes).toFixed(2));
 
     return {
-      totalOrders: factorCount > 0 ? total : summary.Total_Orders,
-      avgDeliveryMinutes: factorCount > 0 ? Number(adjustedAvg.toFixed(2)) : summary.Avg_Delivery_Minutes,
+      totalOrders: total,
+      avgDeliveryMinutes: Number(avg.toFixed(2)),
       minDeliveryMinutes: summary.Min_Delivery_Minutes,
       maxDeliveryMinutes: summary.Max_Delivery_Minutes,
-      isFiltered: factorCount > 0
+      isFiltered: true,
+      filterDescription: activeFiltersList.join(' • '),
+      activeFiltersList,
+      vehicleSharePercent,
+      trafficSharePercent,
+      deltaVsFleetSLA,
+      selectedVehicle,
+      selectedTraffic,
+      operationalStatus
     };
   };
 
